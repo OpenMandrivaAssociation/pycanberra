@@ -1,0 +1,78 @@
+From e1104818d795bde79e203ba750ce37fbba9a8e90 Mon Sep 17 00:00:00 2001
+From: Mathieu Bridon <bochecha@fedoraproject.org>
+Date: Wed, 2 Jan 2013 19:26:23 +0800
+Subject: [PATCH 2/2] Ensure all strings passed to libcanberra are byte strings
+
+We need to pass byte strings to libcanberra, which is default with
+Python 2 when defining a string as "foo".
+
+However, on Python 3, the same definition gives a unicode string, which
+libcanberra can't handle.
+
+To avoid forcing applications to change the way they called pycanberra
+on Python 2, pycanberra now quickly ensures that all strings it handles
+are encoded to bytes, if they weren't already.
+---
+ pycanberra.py | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/pycanberra.py b/pycanberra.py
+index a1bae5d..0d219ba 100644
+--- a/pycanberra.py
++++ b/pycanberra.py
+@@ -6,6 +6,18 @@
+ from ctypes import *
+ import time
+ 
++# This is inspired by the six module: http://pypi.python.org/pypi/six
++import sys
++if sys.version_info.major == 3:
++    string_types = str,
++    def b(s):
++        return s.encode("latin-1")
++else:
++    string_types = basestring,
++    def b(s):
++        return s
++
++
+ # /**
+ #  * CA_PROP_MEDIA_NAME:
+ #  *
+@@ -556,6 +568,8 @@ class Canberra(object):
+          raise CanberraException(res, "Failed to destroy context")
+ 
+    def change_props(self, *args):
++      args = tuple(b(arg) if isinstance(arg, string_types) else arg
++                   for arg in args)
+       res = GetApi().ca_context_change_props(self._handle, *args)
+       if res != CA_SUCCESS:
+          raise CanberraException(res, "Failed to change props")
+@@ -573,11 +587,15 @@ class Canberra(object):
+       pass
+ 
+    def play(self, playId, *args):
++      args = tuple(b(arg) if isinstance(arg, string_types) else arg
++                   for arg in args)
+       res = GetApi().ca_context_play(self._handle, playId, *args)
+       if res != CA_SUCCESS:
+          raise CanberraException(res, "Failed to play!")
+ 
+    def cache(self, *args):
++      args = tuple(b(arg) if isinstance(arg, string_types) else arg
++                   for arg in args)
+       res = GetApi().ca_context_cache(self._handle, *args)
+       if res != CA_SUCCESS:
+          raise CanberraException(res, "Failed to cache")
+@@ -596,6 +614,8 @@ class Canberra(object):
+ 
+    def easy_play_sync(self, eventName):
+       """ play an event sound synchronously """
++      if isinstance(eventName, string_types):
++          eventName = b(eventName)
+       self.play(1,
+                 CA_PROP_EVENT_ID, eventName,
+                 None)
+-- 
+1.8.1
+

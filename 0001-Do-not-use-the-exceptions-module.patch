@@ -1,0 +1,54 @@
+From 2023730c6ece6edf6ddb8f73d80409230fc06089 Mon Sep 17 00:00:00 2001
+From: Mathieu Bridon <bochecha@fedoraproject.org>
+Date: Wed, 28 Nov 2012 23:44:39 +0800
+Subject: [PATCH 1/2] Do not use the exceptions module
+
+On Python 2, it is imported automatically, so there really isn't any
+need to import it, it's classes can be used directly:
+    $ python2
+    >>> e = Exception()
+    >>> import exceptions
+    >>> isinstance(e, exceptions.Exception)
+    True
+
+Also, it doesn't exist on Python 3, so removing it will make the port
+easier.
+---
+ pycanberra.py | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/pycanberra.py b/pycanberra.py
+index 6b1a064..a1bae5d 100644
+--- a/pycanberra.py
++++ b/pycanberra.py
+@@ -4,7 +4,6 @@
+ # License: LGPL 2.1
+ ##########################################################################
+ from ctypes import *
+-import exceptions
+ import time
+ 
+ # /**
+@@ -519,16 +518,16 @@ def GetApi():
+ # int ca_proplist_set(ca_proplist *p, const char *key, const void *data, size_t nbytes);
+ 
+ 
+-class CanberraException(exceptions.Exception):
++class CanberraException(Exception):
+    def __init__(self, err, *args, **kwargs):
+       self._err = err
+-      super(exceptions.Exception, self).__init__(*args, **kwargs)
++      super(Exception, self).__init__(*args, **kwargs)
+ 
+    def get_error(self):
+       return self._err
+ 
+    def __str__(self):
+-      return super(exceptions.Exception, self).__str__() + " (error %d)" % self._err
++      return super(Exception, self).__str__() + " (error %d)" % self._err
+    
+ 
+ class Canberra(object):
+-- 
+1.8.1
+
