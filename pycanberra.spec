@@ -30,7 +30,7 @@ Patch1:        0002-Ensure-all-strings-passed-to-libcanberra-are-byte-st.patch
 BuildArch:     noarch
 
 BuildRequires: python-devel
-BuildRequires: python3-devel
+#BuildRequires: python3-devel
 
 # This will break at run time when libcanberra bumps its soname :(
 Requires:      pkgconfig(libcanberra)
@@ -61,18 +61,18 @@ A very basic (and incomplete) wrapper of libcanberra for Python 3.
 install -d %{buildroot}%{python_sitelib}
 install -p -m 0644 pycanberra.py %{buildroot}%{python_sitelib}
 
-install -d %{buildroot}%{python3_sitelib}
-install -p -m 0644 pycanberra.py %{buildroot}%{python3_sitelib}
+#install -d %{buildroot}%{python3_sitelib}
+#install -p -m 0644 pycanberra.py %{buildroot}%{python3_sitelib}
 
 
 %files
 %doc COPYING README
 %{python_sitelib}/pycanberra.py*
 
-%files -n python3-canberra
-%doc COPYING README
-%{python3_sitelib}/pycanberra.py
-%{python3_sitelib}/__pycache__/pycanberra.cpython-3?.py?
+##%files -n python3-canberra
+##%doc COPYING README
+##%{python3_sitelib}/pycanberra.py
+##%{python3_sitelib}/__pycache__/pycanberra.cpython-3?.py?
 
 
 
